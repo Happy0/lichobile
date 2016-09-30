@@ -1,11 +1,6 @@
-class Friend {
+interface Friend {
   name: string;
   playing: boolean;
-
-  constructor(name: string, playing: boolean) {
-    this.name = name;
-    this.playing = playing;
-  }
 }
 
 let onlineFriends: Array <Friend> = [];
