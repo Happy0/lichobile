@@ -141,7 +141,9 @@ export default {
     useSymmetric: localstorageprop('settings.otb.useSymmetric', true),
     seeSymmetricCoordinates: localstorageprop('settings.otb.seeSymmetricCoordinates', true),
     variant: localstorageprop('settings.otb.variant', 'standard'),
-    availableVariants: offlineAvailableVariants
+    availableVariants: offlineAvailableVariants,
+    time: localstorageprop('settings.otb.time', '0'),
+    increment: localstorageprop('settings.otb.increment', '0'),
   },
 
   clock: {

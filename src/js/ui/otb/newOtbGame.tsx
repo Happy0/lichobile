@@ -1,4 +1,5 @@
 import * as m from 'mithril';
+import * as utils from '../../utils';
 import i18n from '../../i18n';
 import router from '../../router';
 import settings from '../../settings';
@@ -15,6 +16,28 @@ export interface NewOtbGameCtrl {
   close: (fromBB?: string) => void
   isOpen: Mithril.Stream<boolean>
   root: OtbRoundInterface
+}
+
+function renderClockOptions() {
+
+  const formName = 'otb';
+  const conf = settings.otb;
+
+  return [m('div.select_input.inline', {
+    key: formName + 'time'
+  },
+    formWidgets.renderSelect('time', formName + 'time',
+      settings.gameSetup.availableTimes, conf.time, false)
+  ),
+  m('div.select_input.inline', {
+    key: formName + 'increment'
+  },
+    formWidgets.renderSelect(
+      'increment',
+      formName + 'increment',
+      settings.gameSetup.availableIncrements.map(utils.tupleOf),
+      conf.increment, false)
+  )]
 }
 
 export default {
@@ -39,8 +62,8 @@ export default {
       root
     };
   },
-
   view: function(ctrl: NewOtbGameCtrl) {
+
     if (ctrl.isOpen()) {
       return popupWidget(
         'new_offline_game',
@@ -74,6 +97,7 @@ export default {
                   </div> : null
                 }
               </div>
+              {m('div', renderClockOptions())}
               <button className="newGameButton" data-icon="E"
                 oncreate={helper.ontap(() =>
                   ctrl.root.startNewGame(settings.otb.variant() as VariantKey, ctrl.root.vm.setupFen))
@@ -96,4 +120,3 @@ export default {
     return null;
   }
 };
-
