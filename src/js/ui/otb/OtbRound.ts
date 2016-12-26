@@ -21,6 +21,8 @@ import actions from './actions';
 import * as helper from '../helper';
 import newGameMenu, { NewOtbGameCtrl } from './newOtbGame';
 
+import clockCtrl from '../shared/round/clock/clockCtrl';
+
 interface InitPayload {
   variant: VariantKey
   fen?: string
@@ -34,6 +36,8 @@ export default class OtbRound implements OtbRoundInterface {
   public chessground: Chessground.Controller;
   public replay: Replay;
   public vm: OtbVM;
+  public clock: any;
+  private clockIntervId: number;
 
   public constructor(saved?: StoredOfflineGame, setupFen?: string) {
     this.setupFen = setupFen;
@@ -72,6 +76,15 @@ export default class OtbRound implements OtbRoundInterface {
     }
   }
 
+  public isClockRunning(): boolean {
+    return this.data.clock && gameApi.playable(this.data) &&
+      ((this.data.game.turns - this.data.game.startedAtTurn) > 1 || this.data.clock.running);
+  }
+
+  private clockTick = () => {
+    if (this.isClockRunning()) this.clock.tick(this.data.game.player);
+  }
+
   public init(data: OfflineGameData, situations: Array<GameSituation>, ply: number) {
     this.actions.close();
     this.newGameMenu.close();
@@ -98,6 +111,14 @@ export default class OtbRound implements OtbRoundInterface {
     } else {
       ground.reload(this.chessground, this.data, this.replay.situation());
     }
+
+    this.clock = this.data.clock ? new (<any>clockCtrl)(
+      this.data.clock,
+      this.onClockTimeout,
+      this.data.player.color
+    ) : false;
+
+    if (this.clock) this.clockIntervId = setInterval(this.clockTick, 100);
 
     redraw();
   }
@@ -140,6 +161,11 @@ export default class OtbRound implements OtbRoundInterface {
       situations: this.replay.situations,
       ply: this.replay.ply
     });
+  }
+
+  private onClockTimeout = ()  => {
+    clearInterval(this.clockIntervId);
+    console.info("Clock timed out...");
   }
 
   private onPromotion = (orig: Pos, dest: Pos, role: Role) => {
