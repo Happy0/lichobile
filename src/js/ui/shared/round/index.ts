@@ -33,7 +33,9 @@ export interface OfflineRoundInterface extends RoundInterface {
   actions: any
   newGameMenu: any
 
-  startNewGame(variant: VariantKey, setupFen?: string): void
+  startNewGame(variant: VariantKey,
+     clockSettings: ClockSettings,
+      setupFen?: string): void
   save(): void
   onReplayAdded(sit: GameSituation): void
   onThreefoldRepetition(newStatus: GameStatus): void

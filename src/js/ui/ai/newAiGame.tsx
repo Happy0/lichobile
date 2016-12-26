@@ -82,9 +82,16 @@ export default {
                   </div> : null
                 }
               </div>
+              {m('div', formWidgets.renderClockOptions('aiClock',
+               settings.ai.time, settings.ai.increment))}
               <button className="newGameButton" data-icon="E"
                 oncreate={helper.ontap(() =>
-                  ctrl.root.startNewGame(settings.ai.variant() as VariantKey, ctrl.root.vm.setupFen))
+                  ctrl.root.startNewGame(settings.ai.variant() as VariantKey,
+                  {
+                    initial: settings.ai.time(),
+                    increment: settings.ai.increment(),
+                  },
+                  ctrl.root.vm.setupFen))
                 }>
                 {i18n('play')}
               </button>

@@ -133,7 +133,9 @@ export default {
     color: localstorageprop('settings.ai.color', 'white'),
     opponent: localstorageprop('settings.ai.opponent', '1'),
     variant: localstorageprop('settings.ai.variant', 'standard'),
-    availableVariants: offlineAvailableVariants
+    availableVariants: offlineAvailableVariants,
+    time: localstorageprop('settings.ai.time', '0'),
+    increment: localstorageprop('settings.ai.increment', '0')
   },
 
   otb: {
@@ -143,7 +145,7 @@ export default {
     variant: localstorageprop('settings.otb.variant', 'standard'),
     availableVariants: offlineAvailableVariants,
     time: localstorageprop('settings.otb.time', '0'),
-    increment: localstorageprop('settings.otb.increment', '0'),
+    increment: localstorageprop('settings.otb.increment', '0')
   },
 
   clock: {

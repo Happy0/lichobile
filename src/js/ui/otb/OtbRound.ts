@@ -26,7 +26,6 @@ interface InitPayload {
   fen?: string
 }
 
-
 export default class OtbRound implements OtbRoundInterface {
   public setupFen: string;
   public data: OfflineGameData;
@@ -52,15 +51,23 @@ export default class OtbRound implements OtbRoundInterface {
     }
 
     const currentVariant = <VariantKey>settings.otb.variant();
+    const currentTime = <VariantKey>settings.otb.time();
+    const currentIncrement = <VariantKey>settings.otb.increment();
+
+    const clockSettings: ClockSettings = {
+      initial: currentTime,
+      increment: currentIncrement
+    }
+
     if (!setupFen) {
       if (saved) {
         try {
           this.init(saved.data, saved.situations, saved.ply);
         } catch (e) {
-          this.startNewGame(currentVariant);
+          this.startNewGame(currentVariant, clockSettings);
         }
       } else {
-        this.startNewGame(currentVariant);
+        this.startNewGame(currentVariant, clockSettings);
       }
     }
   }
@@ -95,7 +102,7 @@ export default class OtbRound implements OtbRoundInterface {
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, setupFen?: string) {
+  public startNewGame(variant: VariantKey, clockSettings: ClockSettings, setupFen?: string) {
     const payload: InitPayload = {
       variant
     };

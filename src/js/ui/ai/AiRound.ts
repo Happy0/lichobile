@@ -58,16 +58,21 @@ export default class AiRound implements AiRoundInterface {
     this.engine.init()
     .then(() => {
       const currentVariant = <VariantKey>settings.ai.variant();
+      const clockSettings : ClockSettings = {
+        initial: settings.ai.time(),
+        increment: settings.ai.increment()
+      }
       if (!setupFen) {
         if (saved) {
           try {
             this.init(saved.data, saved.situations, saved.ply);
           } catch (e) {
             console.log(e, 'Fail to load saved game');
-            this.startNewGame(currentVariant);
+
+            this.startNewGame(currentVariant, clockSettings);
           }
         } else {
-          this.startNewGame(currentVariant);
+          this.startNewGame(currentVariant, clockSettings);
         }
       }
     });
@@ -111,7 +116,8 @@ export default class AiRound implements AiRoundInterface {
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, setupFen?: string) {
+  public startNewGame(variant: VariantKey, clockSettings: ClockSettings,
+     setupFen?: string) {
     const payload: InitPayload = {
       variant
     }

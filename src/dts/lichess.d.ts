@@ -240,6 +240,11 @@ interface Variant {
   title: string;
 }
 
+interface ClockSettings {
+  initial : String,
+  increment : String
+}
+
 interface GameStatus {
   id: number;
   name: string;

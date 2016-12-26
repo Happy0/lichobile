@@ -1,7 +1,9 @@
 import i18n from '../../i18n';
 import redraw from '../../utils/redraw';
 import * as m from 'mithril';
-import { SettingsProp } from '../../settings';
+import * as utils from '../../utils';
+import {SettingsProp} from '../../settings';
+import settings from '../../settings';
 
 type SelectOption = string[]
 type SelectOptionGroup = Array<SelectOption>;
@@ -76,6 +78,30 @@ export default {
         }
       }, options.map(e => renderOption(e[0], e[1], storedValue, e[2], e[3])))
     ];
+  },
+
+  renderClockOptions(
+    formName: String,
+    timeProp: SettingsProp<String>,
+    incrementProp: SettingsProp<String>) {
+
+      return [m('div.select_input.inline', {
+        key: formName + 'timeSettings'
+      },
+        this.renderSelect(
+          'time',
+          formName + 'time',
+          settings.gameSetup.availableTimes, timeProp, false)
+      ),
+      m('div.select_input.inline', {
+        key: 'increment'
+      },
+        this.renderSelect(
+          'increment',
+          formName + 'increment',
+          settings.gameSetup.availableIncrements.map(utils.tupleOf),
+          incrementProp, false)
+      )]
   },
 
   renderCheckbox(

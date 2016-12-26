@@ -18,28 +18,6 @@ export interface NewOtbGameCtrl {
   root: OtbRoundInterface
 }
 
-function renderClockOptions() {
-
-  const formName = 'otb';
-  const conf = settings.otb;
-
-  return [m('div.select_input.inline', {
-    key: formName + 'time'
-  },
-    formWidgets.renderSelect('time', formName + 'time',
-      settings.gameSetup.availableTimes, conf.time, false)
-  ),
-  m('div.select_input.inline', {
-    key: formName + 'increment'
-  },
-    formWidgets.renderSelect(
-      'increment',
-      formName + 'increment',
-      settings.gameSetup.availableIncrements.map(utils.tupleOf),
-      conf.increment, false)
-  )]
-}
-
 export default {
 
   controller(root: OtbRoundInterface) {
@@ -97,10 +75,15 @@ export default {
                   </div> : null
                 }
               </div>
-              {m('div', renderClockOptions())}
+              {m('div', formWidgets.renderClockOptions('otbClock', settings.otb.time, settings.otb.increment))}
               <button className="newGameButton" data-icon="E"
                 oncreate={helper.ontap(() =>
-                  ctrl.root.startNewGame(settings.otb.variant() as VariantKey, ctrl.root.vm.setupFen))
+                  ctrl.root.startNewGame(settings.otb.variant() as VariantKey,
+                  {
+                     initial: settings.otb.time(),
+                     increment: settings.otb.increment()
+                   },
+                   ctrl.root.vm.setupFen))
                 }>
                 {i18n('play')}
               </button>
