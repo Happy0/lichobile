@@ -240,7 +240,7 @@ interface Variant {
   title: string;
 }
 
-interface ClockSettings {
+interface OfflineClockSettings {
   initial : String,
   increment : String
 }

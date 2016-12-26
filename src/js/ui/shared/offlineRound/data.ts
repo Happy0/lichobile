@@ -19,7 +19,8 @@ export interface OfflineDataConfig {
   player?: Color
   pref?: {
     centerPiece: boolean
-  }
+  },
+  clock?: OfflineClockSettings
 }
 
 export default function data(cfg: OfflineDataConfig): OfflineGameData {

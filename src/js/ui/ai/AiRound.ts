@@ -58,7 +58,7 @@ export default class AiRound implements AiRoundInterface {
     this.engine.init()
     .then(() => {
       const currentVariant = <VariantKey>settings.ai.variant();
-      const clockSettings : ClockSettings = {
+      const clockSettings : OfflineClockSettings = {
         initial: settings.ai.time(),
         increment: settings.ai.increment()
       }
@@ -116,7 +116,7 @@ export default class AiRound implements AiRoundInterface {
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, clockSettings: ClockSettings,
+  public startNewGame(variant: VariantKey, clockSettings: OfflineClockSettings,
      setupFen?: string) {
     const payload: InitPayload = {
       variant

@@ -54,7 +54,7 @@ export default class OtbRound implements OtbRoundInterface {
     const currentTime = <VariantKey>settings.otb.time();
     const currentIncrement = <VariantKey>settings.otb.increment();
 
-    const clockSettings: ClockSettings = {
+    const clockSettings: OfflineClockSettings = {
       initial: currentTime,
       increment: currentIncrement
     }
@@ -102,7 +102,7 @@ export default class OtbRound implements OtbRoundInterface {
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, clockSettings: ClockSettings, setupFen?: string) {
+  public startNewGame(variant: VariantKey, clockSettings: OfflineClockSettings, setupFen?: string) {
     const payload: InitPayload = {
       variant
     };
@@ -117,6 +117,7 @@ export default class OtbRound implements OtbRoundInterface {
       this.init(makeData({
         id: 'offline_otb',
         variant: data.variant,
+        clock: clockSettings,
         initialFen: data.setup.fen,
         fen: data.setup.fen,
         color: this.data && oppositeColor(this.data.player.color) || data.setup.player,

@@ -6,12 +6,12 @@ import { formatTimeInSecs } from '../../utils';
 export default function view() {
   const ctrl = this;
   const body = clockBody.bind(undefined, ctrl);
-  const clockSettingsOverlay = renderClockSettingsOverlay.bind(undefined, ctrl);
+  const clockSettingsOverlay = renderOfflineClockSettingsOverlay.bind(undefined, ctrl);
 
   return layout.clock(body, clockSettingsOverlay);
 }
 
-function renderClockSettingsOverlay(ctrl) {
+function renderOfflineClockSettingsOverlay(ctrl) {
   return [
     clockSettings.view(ctrl.clockSettingsCtrl)
   ];
