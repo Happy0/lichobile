@@ -9,6 +9,7 @@ import * as helper from '../../helper';
 import CrazyPocket from '../../shared/round/crazy/CrazyPocket';
 import { OfflineRoundInterface, Position, Material } from '../round';
 import settings from '../../../settings';
+import Clock, { ClockAttrs } from '../round/clock/clockView';
 
 let pieceNotation: boolean;
 
@@ -26,6 +27,8 @@ export function renderAntagonist(ctrl: OfflineRoundInterface, content: any, mate
   const key = isPortrait ? position + '-portrait' : position + '-landscape';
   const antagonist = position === 'player' ? ctrl.data.player : ctrl.data.opponent;
   const antagonistColor = antagonist.color;
+
+  const runningColor = ctrl.isClockRunning() ? ctrl.chessground.data.turnColor : null;
 
   const className = [
     'playTable',
@@ -49,6 +52,9 @@ export function renderAntagonist(ctrl: OfflineRoundInterface, content: any, mate
         </div> : null
         }
       </div>
+      {ctrl.clock ? <div>
+        {m(Clock, { ctrl: ctrl.clock, color: ctrl.chessground.data.turnColor, runningColor, isBerserk: false })}
+      </div> : null}
       {m(CrazyPocket, {
         ctrl,
         crazyData: sit.crazyhouse,

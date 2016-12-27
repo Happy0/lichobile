@@ -80,8 +80,12 @@ export default {
                 oncreate={helper.ontap(() =>
                   ctrl.root.startNewGame(settings.otb.variant() as VariantKey,
                   {
-                     initial: settings.otb.time(),
-                     increment: settings.otb.increment()
+                     initial: +settings.otb.time(),
+                     increment: +settings.otb.increment(),
+                     black: +settings.otb.time(),
+                     white: +settings.otb.time(),
+                     emerg: 60,
+                     running: false
                    },
                    ctrl.root.vm.setupFen))
                 }>

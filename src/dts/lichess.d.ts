@@ -240,11 +240,6 @@ interface Variant {
   title: string;
 }
 
-interface OfflineClockSettings {
-  initial : String,
-  increment : String
-}
-
 interface GameStatus {
   id: number;
   name: string;

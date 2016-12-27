@@ -25,6 +25,10 @@ import engineCtrl, { EngineInterface } from './engine';
 import * as helper from '../helper';
 import newGameMenu, { NewAiGameCtrl } from './newAiGame';
 
+import * as gameApi from '../../lichess/game';
+
+import clockCtrl from '../shared/round/clock/clockCtrl';
+
 interface InitPayload {
   variant: VariantKey
   fen?: string
@@ -37,6 +41,8 @@ export default class AiRound implements AiRoundInterface {
   public chessground: Chessground.Controller
   public replay: Replay
   public vm: AiVM
+  public clock: any
+  private clockIntervId: number
 
   public engine: EngineInterface;
 
@@ -58,9 +64,17 @@ export default class AiRound implements AiRoundInterface {
     this.engine.init()
     .then(() => {
       const currentVariant = <VariantKey>settings.ai.variant();
-      const clockSettings : OfflineClockSettings = {
-        initial: settings.ai.time(),
-        increment: settings.ai.increment()
+
+      const currentTime = settings.ai.time();
+      const currentIncrement = settings.ai.increment();
+
+      const clockSettings: ClockData = {
+        initial: +currentTime,
+        increment: +currentIncrement,
+        black: +currentTime,
+        white: +currentTime,
+        emerg: 60,
+        running: false
       }
       if (!setupFen) {
         if (saved) {
@@ -76,6 +90,15 @@ export default class AiRound implements AiRoundInterface {
         }
       }
     });
+  }
+
+  public isClockRunning(): boolean {
+    return this.data.clock && gameApi.playable(this.data) &&
+      ((this.data.game.turns - this.data.game.startedAtTurn) > 1 || this.data.clock.running);
+  }
+
+  private clockTick = () => {
+    if (this.isClockRunning()) this.clock.tick(this.data.game.player);
   }
 
   public init(data: OfflineGameData, situations: Array<GameSituation>, ply: number) {
@@ -112,11 +135,19 @@ export default class AiRound implements AiRoundInterface {
       }
     });
 
+    this.clock = this.data.clock ? new (<any>clockCtrl)(
+      this.data.clock,
+      this.onClockTimeout,
+      this.data.player.color
+    ) : false;
+
+    if (this.clock) this.clockIntervId = setInterval(this.clockTick, 100);
+
     this.save();
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, clockSettings: OfflineClockSettings,
+  public startNewGame(variant: VariantKey, clockSettings: ClockData,
      setupFen?: string) {
     const payload: InitPayload = {
       variant
@@ -265,6 +296,11 @@ export default class AiRound implements AiRoundInterface {
         check: sit.check
       });
     }
+  }
+
+  private onClockTimeout = ()  => {
+    clearInterval(this.clockIntervId);
+    console.info("Clock timed out...");
   }
 
   public onReplayAdded = (sit: GameSituation) => {

@@ -20,7 +20,7 @@ export interface OfflineDataConfig {
   pref?: {
     centerPiece: boolean
   },
-  clock?: OfflineClockSettings
+  clock?: ClockData
 }
 
 export default function data(cfg: OfflineDataConfig): OfflineGameData {
@@ -48,6 +48,7 @@ export default function data(cfg: OfflineDataConfig): OfflineGameData {
         name: 'created'
       }
     },
+    clock: cfg.clock,
     player,
     opponent: {
       id: 'opponent',

@@ -88,9 +88,13 @@ export default {
                 oncreate={helper.ontap(() =>
                   ctrl.root.startNewGame(settings.ai.variant() as VariantKey,
                   {
-                    initial: settings.ai.time(),
-                    increment: settings.ai.increment(),
-                  },
+                     initial: +settings.ai.time(),
+                     increment: +settings.ai.increment(),
+                     black: +settings.ai.time(),
+                     white: +settings.ai.time(),
+                     emerg: 60,
+                     running: false
+                   },
                   ctrl.root.vm.setupFen))
                 }>
                 {i18n('play')}

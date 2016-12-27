@@ -58,9 +58,13 @@ export default class OtbRound implements OtbRoundInterface {
     const currentTime = <VariantKey>settings.otb.time();
     const currentIncrement = <VariantKey>settings.otb.increment();
 
-    const clockSettings: OfflineClockSettings = {
-      initial: currentTime,
-      increment: currentIncrement
+    const clockSettings: ClockData = {
+      initial: +currentTime,
+      increment: +currentIncrement,
+      black: +currentTime,
+      white: +currentTime,
+      emerg: 60,
+      running: false
     }
 
     if (!setupFen) {
@@ -123,7 +127,7 @@ export default class OtbRound implements OtbRoundInterface {
     redraw();
   }
 
-  public startNewGame(variant: VariantKey, clockSettings: OfflineClockSettings, setupFen?: string) {
+  public startNewGame(variant: VariantKey, clockSettings: ClockData, setupFen?: string) {
     const payload: InitPayload = {
       variant
     };
