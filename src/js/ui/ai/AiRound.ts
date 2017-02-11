@@ -9,6 +9,7 @@ import gameStatusApi from '../../lichess/status';
 import { playerFromFen } from '../../utils/fen';
 import { oppositeColor, aiName, getRandomArbitrary } from '../../utils';
 import { setCurrentAIGame } from '../../utils/offlineGames';
+import { specialFenVariants } from '../../lichess/variant';
 import redraw from '../../utils/redraw';
 
 import promotion from '../shared/offlineRound/promotion';
@@ -17,7 +18,7 @@ import makeData from '../shared/offlineRound/data';
 import { setResult } from '../shared/offlineRound';
 import atomic from '../shared/round/atomic';
 import crazyValid from '../shared/round/crazy/crazyValid';
-import { AiRoundInterface, AiVM } from '../shared/round';
+import { AiRoundInterface, AiVM, PromotingInterface } from '../shared/round';
 import Replay from '../shared/offlineRound/Replay';
 
 import actions, { AiActionsCtrl } from './actions';
@@ -27,14 +28,14 @@ import newGameMenu, { NewAiGameCtrl } from './newAiGame';
 
 import * as gameApi from '../../lichess/game';
 
-import clockCtrl from '../shared/round/clock/clockCtrl';
+import clockCtrl from '../shared/round/clock/ClockCtrl';
 
 interface InitPayload {
   variant: VariantKey
   fen?: string
 }
 
-export default class AiRound implements AiRoundInterface {
+export default class AiRound implements AiRoundInterface, PromotingInterface {
   public data: OfflineGameData
   public actions: AiActionsCtrl
   public newGameMenu: NewAiGameCtrl
@@ -152,7 +153,7 @@ export default class AiRound implements AiRoundInterface {
     const payload: InitPayload = {
       variant
     }
-    if (setupFen && !['horde', 'racingKings'].includes(variant)) {
+    if (setupFen && !specialFenVariants.includes(variant)) {
       payload.fen = setupFen;
     }
 
@@ -165,7 +166,8 @@ export default class AiRound implements AiRoundInterface {
         variant: data.variant,
         initialFen: data.setup.fen,
         fen: data.setup.fen,
-        color: getColorFromSettings()
+        color: getColorFromSettings(),
+        player: data.setup.player
       }), [data.setup], 0);
     })
     .then(() => {
@@ -211,6 +213,10 @@ export default class AiRound implements AiRoundInterface {
     };
   }
 
+  public player(): Color {
+    return this.data.player.color
+  }
+
   public onEngineMove = (bestmove: string) => {
     const from = <Pos>bestmove.slice(0, 2);
     const to = <Pos>bestmove.slice(2, 4);
@@ -253,7 +259,7 @@ export default class AiRound implements AiRoundInterface {
   }
 
   private userMove = (orig: Pos, dest: Pos) => {
-    if (!promotion.start(this, orig, dest, this.onPromotion)) {
+    if (!promotion.start(this.chessground, orig, dest, this.onPromotion)) {
       this.replay.addMove(orig, dest);
     }
   }
@@ -276,7 +282,7 @@ export default class AiRound implements AiRoundInterface {
     if (crazyValid.drop(this.chessground, this.data, role, key, sit.drops)) {
       this.replay.addDrop(role, key);
     } else {
-      this.jump(this.replay.ply);
+      this.apply(this.replay.situation());
     }
   }
 
@@ -290,7 +296,7 @@ export default class AiRound implements AiRoundInterface {
       this.chessground.set({
         fen: sit.fen,
         turnColor: sit.player,
-        lastMove: lastUci ? [<Pos>lastUci.slice(0, 2), <Pos>lastUci.slice(2, 4)] : null,
+        lastMove: lastUci ? chessFormat.uciToMoveOrDrop(lastUci) : null,
         dests: sit.dests,
         movableColor: sit.player === this.data.player.color ? sit.player : null,
         check: sit.check

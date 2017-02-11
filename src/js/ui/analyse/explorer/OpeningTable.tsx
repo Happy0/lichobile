@@ -2,6 +2,7 @@ import router from '../../../router';
 import * as helper from '../../helper';
 import { AnalyseCtrlInterface, ExplorerData, ExplorerGame, ExplorerMove, ExplorerPlayer } from '../interfaces';
 import settings from '../../../settings';
+import * as xhr from '../../../xhr';
 
 let pieceNotation: boolean;
 
@@ -77,7 +78,7 @@ function resultBar(move: ExplorerMove) {
 
 function onTableTap(ctrl: AnalyseCtrlInterface, e: Event) {
   const el = getTR(e);
-  if ((el.dataset as any).uci) ctrl.explorerMove((el.dataset as any).uci);
+  if (el && el.dataset['uci']) ctrl.explorerMove(el.dataset['uci']);
 }
 
 function showResult(w: Color) {
@@ -88,9 +89,15 @@ function showResult(w: Color) {
 
 function link(ctrl: AnalyseCtrlInterface, e: Event) {
   const orientation = ctrl.chessground.data.orientation;
-  const gameId = (getTR(e).dataset as any).id;
+  const el = getTR(e)
+  const gameId = el && el.dataset['id']
   if (gameId && ctrl.explorer.config.data.db.selected() === 'lichess') {
     router.set(`/analyse/online/${gameId}/${orientation}`);
+  } else {
+    xhr.importMasterGame(gameId, orientation)
+    .then((data: OnlineGameData) =>
+      router.set(`/analyse/online/${data.game.id}/${orientation}`)
+    )
   }
 }
 
@@ -142,26 +149,22 @@ function showMoveTable(ctrl: AnalyseCtrlInterface, moves: Array<ExplorerMove>) {
     >
       <thead>
         <tr>
-          <th>Move</th>
-          <th>Games</th>
-          <th>Rating</th>
-          <th>White / Draw / Black</th>
+          <th className="explorerMove-move">Move</th>
+          <th className="explorerMove-games">Games</th>
+          <th className="explorerMove-result">White / Draw / Black</th>
         </tr>
       </thead>
       <tbody>
         { moves.map(move => {
           return (
             <tr key={move.uci} data-uci={move.uci}>
-              <td className="explorerMove">
+              <td className="explorerMove-move">
                 {move.san[0] === 'P' ? move.san.slice(1) : move.san}
               </td>
-              <td className="explorerMove">
+              <td className="explorerMove-games">
                 {move.white + move.draws + move.black}
               </td>
-              <td className="explorerMove">
-                {move.averageRating}
-              </td>
-              <td className="explorerMove">
+              <td className="explorerMove-result">
                 {resultBar(move)}
               </td>
             </tr>

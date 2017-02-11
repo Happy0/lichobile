@@ -1,6 +1,8 @@
 import * as utils from '../utils';
 import router from '../router';
+import redraw from '../utils/redraw';
 import { challenge as challengeXhr } from '../xhr';
+import { validateFen } from '../utils/fen';
 import settings from '../settings';
 import session from '../session';
 import formWidgets from './shared/form';
@@ -9,12 +11,13 @@ import i18n from '../i18n';
 import storage from '../storage';
 import ViewOnlyBoard from './shared/ViewOnlyBoard';
 import * as helper from './helper';
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import * as stream from 'mithril/stream';
 
 let actionName = '';
 let userId: string;
-let fen: string;
+let setupFen: string;
+let setupFenError: string;
 
 const isOpen = stream(false);
 
@@ -28,7 +31,8 @@ function open(uid?: string) {
   }
   router.backbutton.stack.push(close);
   isOpen(true);
-  fen = null;
+  setupFen = null;
+  setupFenError = null;
 }
 
 
@@ -37,8 +41,8 @@ function close(fromBB?: string) {
   isOpen(false);
 };
 
-function challenge() {
-  return challengeXhr(userId, fen)
+function doChallenge() {
+  return challengeXhr(userId, setupFen)
   .then(data => {
 
     helper.analyticsTrackEvent('Challenge', 'Sent');
@@ -95,37 +99,57 @@ function renderForm() {
   ];
 
   const generalFieldset = [
-    m('div.select_input', {
+    h('div.select_input', {
       key: formName + 'color'
     },
       formWidgets.renderSelect('side', formName + 'color', colors, settingsObj.color)
     ),
-    m('div.select_input', {
+    h('div.select_input', {
       key: formName + 'variant'
     },
       formWidgets.renderSelect('variant', formName + 'variant', variants, settingsObj.variant)
     ),
     settingsObj.variant() === '3' ?
-    m('div.setupPosition', {
+    h('div.setupPosition', {
       key: 'position'
-    }, fen ? [
-      m('div.setupMiniBoardWrapper', {
+    },
+    userId ?
+    h('input[type=text][name=fen]', {
+      placeholder: i18n('pasteTheFenStringHere'),
+      oninput: (e: Event) => {
+        const rawfen = (e.target as HTMLInputElement).value
+        if (validateFen(rawfen).valid) {
+          setupFen = rawfen
+          setupFenError = null
+        }
+        else setupFenError = 'Invalid FEN'
+        redraw()
+      }
+    }) : h('div', h('button.withIcon', {
+      oncreate: helper.ontap(() => {
+        close();
+        router.set('/editor');
+      })
+    }, [h('span.fa.fa-pencil'), i18n('boardEditor')])),
+    setupFenError ?
+    h('div.setupFenError', setupFenError) : null,
+    setupFen ? [
+      h('div', {
+        style: {
+          width: '100px',
+          height: '100px'
+        },
         oncreate: helper.ontap(() => {
           close();
-          router.set(`/editor/${encodeURIComponent(fen)}`);
+          router.set(`/editor/${encodeURIComponent(setupFen)}`);
         })
       }, [
-        m(ViewOnlyBoard, { fen })
+        h(ViewOnlyBoard, { fen: setupFen, bounds: { width: 100, height: 100 }})
       ])
-      ] : m('div', m('button.withIcon', {
-        oncreate: helper.ontap(() => {
-          close();
-          router.set('/editor');
-        })
-      }, [m('span.fa.fa-pencil'), i18n('boardEditor')]))
+      ] : null
     ) : null,
     settingsObj.variant() !== '3' ?
-    m('div.select_input', {
+    h('div.select_input', {
       key: formName + 'mode'
     },
       formWidgets.renderSelect('mode', formName + 'mode', modes, settingsObj.mode)
@@ -133,7 +157,7 @@ function renderForm() {
   ];
 
   const timeFieldset = [
-    m('div.select_input', {
+    h('div.select_input', {
       key: formName + 'timeMode'
     },
       formWidgets.renderSelect('clock', formName + 'timeMode', timeModes, settingsObj.timeMode)
@@ -142,13 +166,13 @@ function renderForm() {
 
   if (hasClock) {
     timeFieldset.push(
-      m('div.select_input.inline', {
+      h('div.select_input.inline', {
         key: formName + 'time'
       },
         formWidgets.renderSelect('time', formName + 'time',
           settings.gameSetup.availableTimes, settingsObj.time, false)
       ),
-      m('div.select_input.inline', {
+      h('div.select_input.inline', {
         key: formName + 'increment'
       },
         formWidgets.renderSelect('increment', formName + 'increment',
@@ -159,7 +183,7 @@ function renderForm() {
 
   if (hasDays) {
     timeFieldset.push(
-      m('div.select_input.large_label', {
+      h('div.select_input.large_label', {
         key: formName + 'days'
       },
         formWidgets.renderSelect('daysPerTurn', formName + 'days',
@@ -167,17 +191,17 @@ function renderForm() {
       ));
   }
 
-  return m('form#invite_form.game_form', {
+  return h('form#invite_form.game_form', {
     onsubmit(e: Event) {
       e.preventDefault();
       if (!settings.gameSetup.isTimeValid(settingsObj)) return;
       close();
-      challenge();
+      doChallenge();
     }
   }, [
-    m('fieldset', generalFieldset),
-    m('fieldset#clock', timeFieldset),
-    m('button[data-icon=E][type=submit].newGameButton', actionName)
+    h('fieldset', generalFieldset),
+    h('fieldset#clock', timeFieldset),
+    h('button[data-icon=E][type=submit].newGameButton', actionName)
   ]);
 }
 
@@ -195,7 +219,7 @@ export default {
   open,
   openFromPosition(f: string) {
     open();
-    fen = f;
+    setupFen = f;
     settings.gameSetup.challenge.variant('3');
     settings.gameSetup.challenge.mode('0');
   }

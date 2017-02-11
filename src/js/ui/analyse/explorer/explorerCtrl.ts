@@ -1,4 +1,4 @@
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import redraw from '../../../utils/redraw';
 import * as helper from '../../helper';
 import { debounce } from 'lodash';
@@ -94,7 +94,7 @@ export default function(root: AnalyseCtrlInterface, allow: boolean): ExplorerCtr
   }, 500);
 
   function fetch(fen: string) {
-    const hasTablebase = ['standard', 'chess960', 'atomic'].includes(effectiveVariant);
+    const hasTablebase = ['standard', 'chess960', 'atomic', 'antichess'].includes(effectiveVariant);
     if (hasTablebase && withGames && tablebaseRelevant(fen)) return fetchTablebase(fen);
     else return fetchOpening(fen);
   }

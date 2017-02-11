@@ -1,15 +1,15 @@
 import i18n from '../../i18n';
 import redraw from '../../utils/redraw';
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import * as utils from '../../utils';
-import {SettingsProp} from '../../settings';
+import { SettingsProp } from '../../settings';
 import settings from '../../settings';
 
 type SelectOption = string[]
 type SelectOptionGroup = Array<SelectOption>;
 
 function renderOption(label: string, value: string, storedValue: string, labelArg: string, labelArg2: string) {
-  return m('option', {
+  return h('option', {
     key: value,
     value: value,
     selected: storedValue === value
@@ -22,7 +22,7 @@ function renderOptionGroup(label:string, value:string | SelectOptionGroup, store
     return renderOption(label, value, storedValue, labelArg, labelArg2);
   }
   else {
-    return m('optgroup', {
+    return h('optgroup', {
       key: label,
       label
     }, value.map(e => renderOption(e[0], e[1], storedValue, e[2], e[3])));
@@ -40,7 +40,7 @@ export default {
   ) {
     const id = name + '_' + value;
     return [
-      m('input.radio[type=radio]', {
+      h('input.radio[type=radio]', {
         name,
         id,
         className: value,
@@ -48,7 +48,7 @@ export default {
         checked,
         onchange
       }),
-      m('label', {
+      h('label', {
         'for': id
       }, i18n(label))
     ];
@@ -64,10 +64,10 @@ export default {
   ) {
     const storedValue = settingsProp();
     return [
-      m('label', {
+      h('label', {
         'for': 'select_' + name
       }, i18n(label)),
-      m('select', {
+      h('select', {
         id: 'select_' + name,
         disabled: isDisabled,
         onchange(e: Event) {
@@ -85,7 +85,7 @@ export default {
     timeProp: SettingsProp<String>,
     incrementProp: SettingsProp<String>) {
 
-      return [m('div.select_input.inline', {
+      return [h('div.select_input.inline', {
         key: formName + 'timeSettings'
       },
         this.renderSelect(
@@ -93,7 +93,7 @@ export default {
           formName + 'time',
           settings.gameSetup.availableTimes, timeProp, false)
       ),
-      m('div.select_input.inline', {
+      h('div.select_input.inline', {
         key: 'increment'
       },
         this.renderSelect(
@@ -112,13 +112,13 @@ export default {
     disabled?: boolean
   ) {
     const isOn = settingsProp();
-    return m('div.check_container', {
+    return h('div.check_container', {
       className: disabled ? 'disabled' : ''
     }, [
-      m('label', {
+      h('label', {
         'for': name
       }, label),
-      m('input[type=checkbox]', {
+      h('input[type=checkbox]', {
         name: name,
         disabled,
         checked: isOn,
@@ -142,10 +142,10 @@ export default {
   ) {
     const storedValue = settingsProp();
     return [
-      m('label', {
+      h('label', {
         'for': 'select_' + name
       }, i18n(label)),
-      m('select', {
+      h('select', {
         id: 'select_' + name,
         disabled: isDisabled,
         onchange(e: Event) {

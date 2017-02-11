@@ -1,4 +1,4 @@
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import router from '../../router';
 import { gameIcon, hasNetwork } from '../../utils';
 import i18n from '../../i18n';
@@ -38,8 +38,8 @@ export function body(ctrl: HomeState) {
           <button className="fatButton" oncreate={helper.ontapY(newGameForm.openRealTime)}>{i18n('createAGame')}</button>
         </section>
         {renderDailyPuzzle(ctrl, isPortrait)}
-        {renderTimeline(ctrl)}
         {renderWeekLeaders(ctrl)}
+        {renderTimeline(ctrl)}
       </div>
     </div>
   );
@@ -63,7 +63,7 @@ function renderDailyPuzzle(ctrl: HomeState, isPortrait: boolean) {
   return (
     <section id="dailyPuzzle">
       <h2 className="homeTitle">{i18n('puzzleOfTheDay')}</h2>
-        {m(miniBoard, {
+        {h(miniBoard, {
           bounds: miniBoardSize(isPortrait),
           fen: puzzle.fen,
           orientation: puzzle.color,
@@ -132,7 +132,7 @@ function renderPlayer(p: any) {
   if (supportedPerfs.indexOf(perfKey) === -1) return null;
 
   return (
-    <li key={perfKey} className="list_item playerSuggestion nav" oncreate={helper.ontapY(() => router.set('/@/' + p.id))}>
+    <li key={perfKey} className="list_item playerSuggestion" oncreate={helper.ontapY(() => router.set('/@/' + p.id))}>
       {userStatus(p)}
       <div className="playerMiniPerf">
         <span className="rating" data-icon={gameIcon(perfKey)}>

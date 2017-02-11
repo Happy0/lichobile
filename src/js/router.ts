@@ -1,7 +1,6 @@
 import * as Rlite from 'rlite-router';
-import * as m from 'mithril';
+import * as RenderService from 'mithril/render';
 import * as Vnode from 'mithril/render/vnode';
-import { uid } from './utils'
 import signals from './signals';
 import { isFunction } from 'lodash';
 import session from './session';
@@ -11,6 +10,11 @@ interface Backbutton {
   (): void;
   stack: Array<(fromBB?: string) => void>;
 }
+
+const uid = (function() {
+  let id = 0;
+  return () => id++;
+})();
 
 const router = new Rlite();
 
@@ -28,7 +32,7 @@ export function defineRoutes(mountPoint: HTMLElement, routes: {[index: string]: 
       }}
 
       function redraw() {
-        m.render(mountPoint, Vnode(RouteComponent, undefined, undefined, undefined, undefined, undefined));
+        RenderService.render(mountPoint, Vnode(RouteComponent, undefined, undefined, undefined, undefined, undefined));
       }
 
       signals.redraw.removeAll();

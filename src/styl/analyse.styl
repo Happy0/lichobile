@@ -9,7 +9,6 @@
 .analyse-tableWrapper
   margin-top 5px
   flex 1 1 auto
-  width 100%
   display flex
   flex-flow column nowrap
 
@@ -22,37 +21,50 @@
   overflow hidden
 
 .analyse-infosBox
-  flex 1 1 auto
+  flex 1 1 40%
   display flex
   flex-flow column nowrap
   > .native_scroller
     flex 1 1 auto
 
 .analyse-game
-  flex 0 0 60%
-  max-width 230px
+  width 60%
+  max-width 400px
   display flex
   flex-flow column nowrap
 
+.analyse-loadingReplay
+  flex 1 1 auto
+  display flex
+  justify-content center
+  align-items center
+  > .spinner
+    width 40px
+    height 40px
+
 .analyse-replay
+  flex 1 1 auto
   position relative
   display flex
   flex-flow column nowrap
   font-size 0.9rem
-  > .result, > .status
-    font-size 0.8em
-    width 100%
-  > .result
-    margin-top 2px
-    text-align center
-    font-weight bold
-  > .status
-    font-style italic
-    text-align center
+  padding-right 5px
   &.displayPieces
     > turn
       > move
         font-family ChessSansPiratf
+  @media only screen and (orientation: landscape) and (max-height 450px)
+    font-size 0.7em
+
+.analyse-openingBox
+  flex 0 0 25px
+  line-height 25px
+  padding 0 4px
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size 0.75em
+  background lighten(bgdark, 5%)
 
 turn
   width 100%
@@ -87,10 +99,10 @@ move
   overflow hidden
   white-space nowrap
   &.current
-    color gold
+    color orangeDark
     font-weight bold
     > eval
-      color rgba(gold, 70%)
+      color rgba(orangeDark, 70%)
   &.active
       background lighten(bgdark, 10%)
 
@@ -110,58 +122,54 @@ eval
   font-weight lighter
   color rgba(textDarkBg, 70%)
 
-.analysisMeta
+interrupt
   flex 0 0 auto
   min-height 25px
   display flex
-  flex-flow row wrap
+  flex-flow column nowrap
   font-size 0.8em
   background lighten(bgdark, 5%)
-  > .comment
-    font-size 0.8em
-    width 100%
+
+lines
+  display flex
+  align-items center
+  > .menuIcon
+    flex 0 0 13%
+    height 25px
+    font-size 1.5em
+    margin 0
     display flex
-    padding: 0 5px
+    justify-content center
     align-items center
-    word-wrap: break-word;
-    &.white
-      border-left 2px solid #ccc
-    &.black
-      border-right 2px solid #ccc
-      justify-content flex-end
-    &.Inaccuracy
-      border-color: #56B4E9;
-    &.Mistake
-      border-color: #E69F00;
-    &.Blunder
-      border-color: #DF5353;
-  > .variationWrapper
-    width 100%
-    display flex
-    align-items center
-    > .variation
-      flex 0 1 auto
-      width calc(100% - 25px)
-      white-space nowrap
-      overflow hidden
-      &.visiting
-        > index, > move
-          color #ebe1cd
-        > move.current
-          color gold
-        white-space normal
-      &.nested
-        display inline
-        margin-left 5px
-    > .menuIcon
-      flex 0 0 13%
-      height 25px
-      font-size 1.5em
-      text-align center
-      margin 0
-      &:before
-        position relative
-        top 5px
+
+line
+  flex 0 1 auto
+  width calc(100% - 25px)
+  white-space nowrap
+  overflow hidden
+  &.visiting
+    white-space normal
+  > .nested
+    margin-left 5px
+
+.comment
+  flex 1 1 auto
+  font-size 0.8em
+  display flex
+  padding: 0 5px
+  align-items center
+  word-wrap: break-word;
+  &.white
+    border-left 2px solid #ccc
+  &.black
+    border-right 2px solid #ccc
+    justify-content flex-end
+  &.Inaccuracy
+    border-color: #56B4E9;
+  &.Mistake
+    border-color: #E69F00;
+  &.Blunder
+    border-color: #DF5353;
 
 .analyse_variant_selector
   width 100%
@@ -181,14 +189,16 @@ eval
       font-size 20px
 
 .analyse-cevalBox
-  flex 0 0 36px
+  flex 0 0 38px
   position relative
   overflow hidden
-  width 100%
+  width calc(100% - 5px)
+  margin-right 5px
   display flex
   flex-flow row nowrap
   align-items center
   align-content center
+  background lighten(bgdark, 7%)
 
 .analyse-engine_info
   flex 1 0
@@ -203,13 +213,12 @@ eval
 
 .analyse-cevalBar
   position absolute
-  transform translateX(-100%)
-  width 100%
+  width 0%
   height 2px
   top 0
   left 0
-  background green
-  transition transform linear 1s
+  background gold
+  transition width linear 800ms
 
 .analyse-curEval
   flex 0 0 auto
@@ -222,7 +231,7 @@ eval
   font-size 16px
   font-weight bold
   padding 3px 5px
-  background lighten(bgdark, 5%)
+  background lighten(bgdark, 12%)
   > .spinner
     width initial
     height initial
@@ -270,7 +279,6 @@ eval
 
 .analyseOpponent
   text-align left
-  width 100%
   margin-bottom 0.5em
   > .pocket
     width 100%
@@ -310,25 +318,21 @@ eval
   > span
     margin-left 5px
 
-.analysePlayerName.crazy
-  white-space nowrap
+.analysePlayerName
   overflow hidden
   text-overflow ellipsis
 
-
 .variationMenuPopup
-  position fixed
   font-size 1rem
-  .overlay_popup
-    height 100px
-    top calc((100% - 100px) / 2)
-    border-radius 5px
-    text-align center
-    > .variationMenu
-      display flex
-      flex-flow column nowrap
-      justify-content center
-      height 100%
+  height 100px
+  top calc((100% - 100px) / 2)
+  border-radius 5px
+  text-align center
+  .variationMenu
+    display flex
+    flex-flow column nowrap
+    justify-content center
+    height 100%
 
 .explorerTable
   position relative
@@ -358,14 +362,19 @@ eval
   tbody, > .message
     transition: opacity 0.13s;
   th, .title
-    color gold
+    color #ccc
     text-transform: capitalize;
-    font-weight bold
+    font-weight normal
     font-size: 12px;
     line-height: 22px;
-    background headerBgDark
+    background darkBlue
     text-align: left;
     padding-left: 7px;
+  th
+    &.explorerMove-games
+      padding-left 15px
+    &.explorerMove-result
+      padding-left 15px
   tr
     transition: background-color 0.13s;
     &:nth-child(even)
@@ -373,6 +382,18 @@ eval
   td
     vertical-align middle
     padding-left: 7px;
+    &.explorerMove-move
+      font-size: 14px;
+      line-height: 30px;
+      padding-left: 7px;
+    &.explorerMove-games
+      font-size: 11px;
+      text-align: right;
+      padding-left 10px
+    &.explorerMove-result
+      width: 100%;
+      padding-right: 7px;
+      padding-left 15px
   .white
     background: #bbb;
     color: #222;
@@ -404,20 +425,20 @@ eval
       font-family: monospace;
       font-size: 0.9em;
   .toconf
-    color gold
+    color #ccc
     position: absolute;
-    top: 0;
+    top: 1px;
     right: 0;
     display: block;
     font-size: 20px;
     line-height: 20px;
     width 30px
-    height 30px
+    height 22px
     text-align: center;
     opacity: 0.7;
   .message
-    font-size 0.8em
     text-align: center;
+    font-size 0.9em
     font-style: italic;
     i
       font-size: 22px;
@@ -441,14 +462,15 @@ eval
 
 .explorer-fixedTitle
   flex 0 0 23px
-  font-size 13px
-  font-weight bold
+  font-size 12px
   line-height 22px
   overflow hidden
   white-space nowrap
-  background headerBgDark
+  text-overflow ellipsis
+  background darkBlue
   padding 0 7px
-  color gold
+  padding-right 28px
+  color #ccc
 
 .explorerConfig
   font-size 0.75em
@@ -465,19 +487,6 @@ eval
       line-height: 2em;
       max-width 300px
       margin 0 auto
-
-.explorerMove
-  &:first-child
-    font-size: 14px;
-    line-height: 30px;
-    padding-left: 7px;
-  &:nth-child(2), &:nth-child(3)
-    font-size: 10px;
-    opacity: 0.8;
-    text-align: right;
-  &:last-child
-    width: 100%;
-    padding-right: 7px;
 
 .explorerBar
   text-align: center;
@@ -540,30 +549,40 @@ eval
   padding 10px
 
 .moves.displayPieces
-  .explorerMove
+  .explorerMove-move
     font-family ChessSansPiratf
 
 .view-container.light
+  turn > move
+    background-color #fff
+
   move.active
     background darken(bglight, 10%)
 
-  .analyse-replay > turn > index, .analysisMeta
-    background darken(bglight, 7%)
+  .analyse-replay > turn > index, interrupt, .analyse-openingBox
+    background darken(bglight, 5%)
 
   .analyse_variant_selector
     background: themeBgLight
     text-shadow: 0 1px 0 #FFF;
     color: #848484;
 
-  .analyse-curEval
+  .analyse-cevalBox
     background darken(bglight, 7%)
+  .analyse-curEval
+    background darken(bglight, 9%)
 
   .explorer-fixedTitle
-    background bgdark
+    background blue
+    color #fff
 
   .explorerTable
+    thead
+      > tr
+        background blue
     th, .title
-      background bgdark
+      background blue
+      color #fff
     tr
       &:nth-child(even)
         background #fafafa
@@ -575,9 +594,15 @@ eval
     .black
       background: #555;
       color: #ddd;
+    .toconf
+      color #fff
+
   .explorerBar
     border-color #ccc
+
   .explorerConfig
     span
       border-color #ccc
+      &.selected
+        background blue
 

@@ -4,7 +4,8 @@ import router from '../../router';
 import settings from '../../settings';
 import * as utils from '../../utils';
 import ButtonHandler from './button';
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
+import { UserGamePlayer } from '../../lichess/interfaces/user'
 
 export interface ViewportDim {
   vw: number
@@ -13,23 +14,21 @@ export interface ViewportDim {
 
 const animDuration = 250;
 
-// store temporarily last route to disable animations on same route
-// TODO find a better way cause this is ugly
-let lastRoute: string;
-
 // this must be cached because of the access to document.body.style
-let cachedTransformProp: string;
-let cachedViewportDim: ViewportDim = null;
+let cachedTransformProp: string
+let cachedIsPortrait: boolean
+let cachedViewportAspectIs43: boolean
+let cachedViewportDim: ViewportDim = null
 
 export function onPageEnter(anim: (el: HTMLElement) => void) {
-  return ({ dom }: Mithril.ChildNode) => anim(dom as HTMLElement);
+  return ({ dom }: Mithril.DOMNode) => anim(dom as HTMLElement);
 }
 
 // because mithril will call 'onremove' asynchronously when the component has
 // an 'onbeforeremove' hook, some cleanup tasks must be done in the latter hook
 // thus this helper
 export function onPageLeave(anim: (el: HTMLElement) => Promise<void>, cleanup: () => void = null) {
-  return function({ dom }: Mithril.ChildNode, done: () => void) {
+  return function({ dom }: Mithril.DOMNode, done: () => void) {
     if (cleanup) cleanup();
     return anim(dom as HTMLElement)
     .then(done)
@@ -65,11 +64,7 @@ export function elFadeIn(el: HTMLElement) {
 // apply only to page change transitions
 // they listen to history to determine if animation is going forward or backward
 export function pageSlideIn(el: HTMLElement) {
-  if (router.get() === lastRoute) {
-    return;
-  }
   let tId: number;
-  lastRoute = router.get();
 
   function after() {
     clearTimeout(tId);
@@ -142,10 +137,11 @@ export function transformProp() {
 }
 
 export function clearCachedViewportDim() {
-  cachedViewportDim = null;
+  cachedViewportDim = null
+  cachedIsPortrait = undefined
 }
 
-export function slidesInUp(vnode: Mithril.ChildNode) {
+export function slidesInUp(vnode: Mithril.DOMNode) {
   const el = (vnode.dom as HTMLElement);
   el.style.transform = 'translateY(100%)';
   // force reflow hack
@@ -163,7 +159,7 @@ export function slidesOutDown(callback: () => void, elID: string) {
   };
 }
 
-export function slidesInLeft(vnode: Mithril.ChildNode) {
+export function slidesInLeft(vnode: Mithril.DOMNode) {
   const el = vnode.dom as HTMLElement;
   el.style.transform = 'translateX(100%)';
   // force reflow hack
@@ -195,7 +191,7 @@ type TapHandler = (e?: Event) => void;
 type RepeatHandler = () => boolean;
 
 function createTapHandler(tapHandler: TapHandler, holdHandler: TapHandler, repeatHandler: RepeatHandler, scrollX: boolean, scrollY: boolean, touchEndFeedback: boolean, getElement?: (e: TouchEvent) => HTMLElement) {
-  return function(vnode: Mithril.ChildNode) {
+  return function(vnode: Mithril.DOMNode) {
     ButtonHandler(vnode.dom as HTMLElement,
       (e: Event) => {
         tapHandler(e);
@@ -212,7 +208,7 @@ function createTapHandler(tapHandler: TapHandler, holdHandler: TapHandler, repea
 }
 
 export function ontouch(handler: TapHandler) {
-  return ({ dom }: Mithril.ChildNode) => {
+  return ({ dom }: Mithril.DOMNode) => {
     dom.addEventListener('touchstart', handler);
   };
 }
@@ -225,15 +221,15 @@ export function ontapX(tapHandler: TapHandler, holdHandler?: TapHandler, touchEn
   return createTapHandler(tapHandler, holdHandler, null, true, false, touchEndFeedback);
 }
 
-export function ontapY(tapHandler: TapHandler, holdHandler?: TapHandler, touchEndFeedback?: boolean) {
-  return createTapHandler(tapHandler, holdHandler, null, false, true, touchEndFeedback);
+export function ontapY(tapHandler: TapHandler, holdHandler?: TapHandler, touchEndFeedback?: boolean, getElement?: (e: TouchEvent) => HTMLElement) {
+  return createTapHandler(tapHandler, holdHandler, null, false, true, touchEndFeedback, getElement);
 }
 
 export function progress(p: number) {
   if (p === 0) return null;
-  return m('span', {
+  return h('span', {
     className: 'progress ' + (p > 0 ? 'positive' : 'negative'),
-    'data-icon': p > 0 ? 'N' : 'M'
+    'data-icon': p > 0 ? 'N' : 'h'
   }, String(Math.abs(p)));
 }
 
@@ -253,20 +249,20 @@ export function isVeryWideScreen() {
   return viewportDim().vw >= 960;
 }
 
-export function isLandscapeSmall({ vh }: ViewportDim) {
-  return vh <= 450;
-}
-
 export function is43Aspect(): boolean {
-  return window.matchMedia('(aspect-ratio: 4/3), (aspect-ratio: 3/4), (device-aspect-ratio: 4/3), (device-aspect-ratio: 3/4)').matches;
+  if (cachedViewportAspectIs43 !== undefined) return cachedViewportAspectIs43
+  else {
+    cachedViewportAspectIs43 = window.matchMedia('(aspect-ratio: 4/3), (aspect-ratio: 3/4), (device-aspect-ratio: 4/3), (device-aspect-ratio: 3/4)').matches;
+    return cachedViewportAspectIs43
+  }
 }
 
 export function isPortrait(): boolean {
-  return window.matchMedia('(orientation: portrait)').matches;
-}
-
-export function isLandscape(): boolean {
-  return window.matchMedia('(orientation: landscape)').matches;
+  if (cachedIsPortrait !== undefined) return cachedIsPortrait
+  else {
+    cachedIsPortrait = window.matchMedia('(orientation: portrait)').matches;
+    return cachedIsPortrait
+  }
 }
 
 export function getBoardBounds(viewportDim: ViewportDim, isPortrait: boolean, mode: string, halfsize: boolean = false): BoardBounds  {
@@ -370,7 +366,7 @@ export function analyticsTrackEvent(category: string, action: string) {
   }
 }
 
-export function autofocus(vnode: Mithril.ChildNode) {
+export function autofocus(vnode: Mithril.DOMNode) {
   (vnode.dom as HTMLElement).focus();
 }
 
@@ -392,7 +388,7 @@ export function onKeyboardHide() {
   }
 }
 
-export function renderRatingDiff(player: Player) {
+export function renderRatingDiff(player: Player | UserGamePlayer) {
   if (player.ratingDiff === undefined) return null;
   if (player.ratingDiff === 0) return <span className="rp null"> +0</span>;
   if (player.ratingDiff > 0) return <span className="rp up"> + {player.ratingDiff}</span>;

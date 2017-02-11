@@ -1,22 +1,24 @@
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import * as helper from '../../helper';
 import explorerConfig from './explorerConfig';
 import { AnalyseCtrlInterface, ExplorerMove } from '../interfaces';
 import OpeningTable, { Attrs as OpeningTableAttrs, showEmpty, getTR } from './OpeningTable';
 
 function onTablebaseTap(ctrl: AnalyseCtrlInterface, e: Event) {
-  const uci = getTR(e).dataset['uci'];
+  const el = getTR(e)
+  const uci = el && el.dataset['uci'];
   if (uci) ctrl.explorerMove(uci);
 }
 
-function showTitle(ctrl: AnalyseCtrlInterface) {
-  const data = ctrl.explorer.current();
+function showTitle(ctrl: AnalyseCtrlInterface): Mithril.Children {
+  const data = ctrl.explorer.current()
+  const opening = ctrl.analyse.getOpening(ctrl.vm.path) || ctrl.data.game.opening
   if (ctrl.data.game.variant.key === 'standard' || ctrl.data.game.variant.key === 'fromPosition') {
-    if (data && data.tablebase) return 'Endgame tablebase';
-    else return 'Opening explorer';
+    if (data && data.tablebase) return 'Endgame tablebase'
+    else return opening ? opening.eco + ' ' + opening.name : 'Opening explorer'
   } else {
-    const what = data && data.tablebase ? ' endgame tablebase' :  ' opening explorer';
-    return ctrl.data.game.variant.name + what;
+    const what = data && data.tablebase ? ' endgame tablebase' :  ' opening explorer'
+    return ctrl.data.game.variant.name + what
   }
 }
 
@@ -54,37 +56,39 @@ function winner(stm: string, move: ExplorerMove) {
 }
 
 function showDtm(stm: string, move: ExplorerMove) {
-  if (move.dtm) return m('result.' + winner(stm, move), {
+  if (move.dtm) return h('result.' + winner(stm, move), {
     title: 'Mate in ' + Math.abs(move.dtm) + ' half-moves (Depth To Mate)'
   }, 'DTM ' + Math.abs(move.dtm));
   else return null;
 }
 
 function showDtz(stm: string, move: ExplorerMove) {
-  if (move.checkmate) return m('result.' + winner(stm, move), 'Checkmate');
-  else if (move.stalemate) return m('result.draws', 'Stalemate');
-  else if (move.insufficient_material) return m('result.draws', 'Insufficient material');
+  if (move.checkmate) return h('result.' + winner(stm, move), 'Checkmate');
+  else if (move.stalemate) return h('result.draws', 'Stalemate');
+  else if (move.variant_win) return h('result.' + winner(stm, move), 'Variant loss');
+  else if (move.variant_loss) return h('result.' + winner(stm, move), 'Variant win');
+  else if (move.insufficient_material) return h('result.draws', 'Insufficient material');
   else if (move.dtz === null) return null;
-  else if (move.dtz === 0) return m('result.draws', 'Draw');
+  else if (move.dtz === 0) return h('result.draws', 'Draw');
   else if (move.zeroing) {
     let capture = move.san.indexOf('x') !== -1;
-    if (capture) return m('result.' + winner(stm, move), 'Capture');
-    else return m('result.' + winner(stm, move), 'Pawn move');
+    if (capture) return h('result.' + winner(stm, move), 'Capture');
+    else return h('result.' + winner(stm, move), 'Pawn move');
   }
-  else return m('result.' + winner(stm, move), {
+  else return h('result.' + winner(stm, move), {
     title: 'Next capture or pawn move in ' + Math.abs(move.dtz) + ' half-moves (Distance To Zeroing of the 50 move counter)'
   }, 'DTZ ' + Math.abs(move.dtz));
 }
 
 function showGameEnd(ctrl: AnalyseCtrlInterface, title: string) {
-  return m('div.explorer-data.empty', {
+  return h('div.explorer-data.empty', {
     key: 'explorer-game-end' + title
   }, [
-    m('div.title', 'Game over'),
-    m('div.message', [
-      m('i[data-icon=]'),
-      m('h3', title),
-      m('button.button.text[data-icon=L]', {
+    h('div.title', 'Game over'),
+    h('div.message', [
+      h('i[data-icon=]'),
+      h('h3', title),
+      h('button.button.text[data-icon=L]', {
         oncreate: helper.ontapY(ctrl.explorer.toggle)
       }, 'Close')
     ])
@@ -94,7 +98,7 @@ function showGameEnd(ctrl: AnalyseCtrlInterface, title: string) {
 function show(ctrl: AnalyseCtrlInterface) {
   const data = ctrl.explorer.current();
   if (data && data.opening) {
-    return m<OpeningTableAttrs>(OpeningTable, { data, ctrl });
+    return h(OpeningTable, { data, ctrl });
   }
   else if (data && data.tablebase) {
     const moves = data.moves;
@@ -112,25 +116,26 @@ function show(ctrl: AnalyseCtrlInterface) {
     }
     else if (data.checkmate) return showGameEnd(ctrl, 'Checkmate');
     else if (data.stalemate) return showGameEnd(ctrl, 'Stalemate');
+    else if (data.variant_win || data.variant_loss) return showGameEnd(ctrl, 'Variant end');
     else return showEmpty(ctrl);
   }
   return <div key="explorer-no-data" />;
 }
 
 function showConfig(ctrl: AnalyseCtrlInterface) {
-  return m('div.explorerConfig', {
+  return h('div.explorerConfig', {
     key: 'opening-config'
   }, explorerConfig.view(ctrl.explorer.config));
 }
 
 function failing() {
-  return m('div.failing.message', {
+  return h('div.failing.message', {
     key: 'failing'
   }, [
-    m('i[data-icon=,]'),
-    m('h3', 'Oops, sorry!'),
-    m('p', 'The explorer is temporarily'),
-    m('p', 'out of service. Try again soon!')
+    h('i[data-icon=,]'),
+    h('h3', 'Oops, sorry!'),
+    h('p', 'The explorer is temporarily'),
+    h('p', 'out of service. Try again soon!')
   ]);
 }
 

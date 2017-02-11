@@ -2,7 +2,7 @@ import { header as headerWidget, backButton } from '../../shared/common';
 import router from '../../../router';
 import session from '../../../session';
 import layout from '../../layout';
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import i18n from '../../../i18n';
 import { gameIcon, formatTimeInSecs, formatTournamentDuration, formatTournamentTimeControl } from '../../../utils';
 import faq from '../faq';
@@ -15,10 +15,20 @@ import { TournamentState, Tournament, PlayerInfoState, StandingPlayer, PodiumPla
 export default function view(vnode: Mithril.Vnode<{}, TournamentState>) {
   const ctrl = vnode.state as TournamentState;
 
+  if (ctrl.notFound()) {
+    return layout.free(
+      () => headerWidget(null, backButton(i18n('tournamentNotFound'))),
+      () =>
+        <div key="tournament-not-found" className="tournamentNotFound">
+          <p>{i18n('tournamentDoesNotExist')}</p>
+          <p>{i18n('tournamentMayHaveBeenCanceled')}</p>
+        </div>
+    )
+  }
+
   const headerCtrl = () => headerWidget(null,
     backButton(ctrl.tournament() ? ctrl.tournament().fullName : null)
   );
-
   const bodyCtrl = () => tournamentBody(ctrl);
   const footer = () => renderFooter(ctrl);
   const faqOverlay = () => renderFAQOverlay(ctrl);
@@ -140,6 +150,15 @@ function tournamentHeader(data: Tournament, time: number, timeText: string) {
         &nbsp;•&nbsp;
         { window.moment(data.startsAt).calendar() }
       </div>
+      { data.position ?
+      <div className={'tournamentPositionInfo' + (data.position.wikiPath ? ' withLink' : '')}
+        oncreate={helper.ontapY(() => data.position.wikiPath &&
+          window.open(`https://en.wikipedia.org/wiki/${data.position.wikiPath}`)
+        )}
+      >
+        {data.position.eco + ' ' + data.position.name}
+      </div> : null
+      }
    </div>
   );
 }
@@ -292,7 +311,7 @@ function tournamentFeaturedGame(ctrl: TournamentState) {
     <div className='tournamentGames'>
       <p className='tournamentTitle'>Featured Game</p>
       <div key={featured.id} className='tournamentMiniBoard'>
-        {m(miniBoard, {
+        {h(miniBoard, {
           bounds: miniBoardSize(isPortrait),
           fen: featured.fen,
           lastMove: featured.lastMove,

@@ -29,19 +29,14 @@
     &.active
       background activeBgLight
 
-  input[type=checkbox]
-    background #aaa
-    &:checked
-      background gold
-
   .overlay, .menu-close-overlay
     background-color rgba(0,0,0,0.6)
 
   .card
-    background themeBgLight
+    background #fff
     box-shadow 0px 2px 15px 0 rgba(0,0,0,0.5)
     .icon-game
-      border-color themeBgLight
+      border-color #fff
     h2
       color textDarkGray
     &.challenge
@@ -54,7 +49,7 @@
         color #fff
 
   .list_item
-    border-bottom-color borderLightGray
+    border-bottom-color #ddd
     &.active
       background-color darken(bglight, 5%)
 
@@ -98,11 +93,9 @@
     color textGray
     &.disabled
       color rgba(textGray, 0.4)
-    &.glow
-      animation answer_glow_light 5s infinite
     &.highlight
-      background textLightGray
-      color themeBgLight
+      background blue
+      color #fff
     &.active
       background darken(themeBgLight, 8%)
 
@@ -111,19 +104,22 @@
     color textMediumGray
 
   .main_header
-    box-shadow 0px 1px 1px 0px rgba(0,0,0,0.2)
     &.board
       background themeBgLight
       box-shadow none
-      .main_header_button
+      .back_button, .main_header_button
         color textLightBg
         &.active
           background darken(themeBgLight, 8%)
+      .back_button
+        > button
+          &.active
+            background darken(themeBgLight, 8%)
       .chip
         color #eee
         background gold
         border-color #eee
-      h1
+      .main_header_title
         color textLightBg
     &:not(.board)
       .game_menu_button
@@ -147,18 +143,6 @@
   .select_games_filter
     margin-top -1px
 
-  #searchPlayersModal
-    > header
-      color textMediumGray
-      border-bottom 1px solid borderLightGray
-    > .modal_content
-      color textMediumGray
-      background-color themeBgLight
-    .list_item
-      border-bottom-color borderLightGray
-      &.active
-        background-color darken(bglight, 5%)
-
   .userGame
     background-color bglight
     color textMediumGray
@@ -175,10 +159,6 @@
   .followingPlayerAction
     &.active
       background darken(bglight, 5%)
-
-  .tabs
-    background-color headerBgDark
-    margin-top -1px
 
   .tab
     height 45px

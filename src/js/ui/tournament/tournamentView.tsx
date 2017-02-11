@@ -1,20 +1,22 @@
-import * as h from '../helper';
+import * as helper from '../helper';
 import router from '../../router';
-import {header } from '../shared/common';
+import session from '../../session';
+import { header } from '../shared/common';
 import { pad, formatTournamentDuration, formatTournamentTimeControl, capitalize } from '../../utils';
 import layout from '../layout';
 import i18n from '../../i18n';
-import * as m from 'mithril';
+import * as h from 'mithril/hyperscript';
 import tabs from '../shared/tabs';
 import newTournamentForm from './newTournamentForm';
 import { TournamentListsState, TournamentListItem } from './interfaces';
 
 export default function view(vnode: Mithril.Vnode<{}, TournamentListsState>) {
-  const ctrl = vnode.state;
-  const bodyCtrl = tournamentListBody.bind(undefined, ctrl);
-  const footer = () => renderFooter();
+  const ctrl = vnode.state
+  const bodyCtrl = tournamentListBody.bind(undefined, ctrl)
+  const footer = session.isConnected() ? () => renderFooter() : null
+  const overlay = () => newTournamentForm.view(ctrl)
 
-  return layout.free(header.bind(undefined, i18n('tournaments')), bodyCtrl, footer);
+  return layout.free(() => header(i18n('tournaments')), bodyCtrl, footer, overlay)
 }
 
 const TABS = [{
@@ -29,17 +31,20 @@ const TABS = [{
 }];
 
 function tabNavigation (currentTabFn: Mithril.Stream<string>) {
-    return m('.nav-header', m(tabs, {
-        buttons: TABS,
-        selectedTab: currentTabFn(),
-        onTabChange: (k: string) => {
-          const loc = window.location.search.replace(/\?tab\=\w+$/, '');
-          try {
-            window.history.replaceState(window.history.state, null, loc + '?tab=' + k);
-          } catch (e) { console.error(e) }
-          currentTabFn(k);
-        }
-    }));
+    return h('.tabs-nav-header', [
+      h(tabs, {
+          buttons: TABS,
+          selectedTab: currentTabFn(),
+          onTabChange: (k: string) => {
+            const loc = window.location.search.replace(/\?tab\=\w+$/, '');
+            try {
+              window.history.replaceState(window.history.state, null, loc + '?tab=' + k);
+            } catch (e) { console.error(e) }
+            currentTabFn(k);
+          }
+      }),
+      h('div.main_header_drop_shadow')
+    ]);
 }
 
 function tournamentListBody(ctrl: TournamentListsState) {
@@ -72,7 +77,7 @@ function renderTournamentListItem(tournament: TournamentListItem) {
   return (
     <tr key={tournament.id}
       className={'list_item tournament_item' + (tournament.createdBy === 'lichess' ? ' official' : '')}
-      oncreate={h.ontapY(() => router.set('/tournament/' + tournament.id))}
+      oncreate={helper.ontapY(() => router.set('/tournament/' + tournament.id))}
     >
       <td className="tournamentListName" data-icon={tournament.perf.icon}>
         <div className="fullName">{tournament.fullName}</div>
@@ -92,7 +97,7 @@ function renderTournamentListItem(tournament: TournamentListItem) {
 function renderFooter() {
   return (
     <div className="actions_bar">
-      <button key="createTournament" className="action_bar_button" oncreate={h.ontap(newTournamentForm.open)}>
+      <button key="createTournament" className="action_bar_button" oncreate={helper.ontap(newTournamentForm.open)}>
         <span className="fa fa-pencil" />
         {i18n('createANewTournament')}
       </button>

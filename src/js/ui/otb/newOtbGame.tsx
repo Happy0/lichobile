@@ -1,8 +1,8 @@
-import * as m from 'mithril';
-import * as utils from '../../utils';
+import * as h from 'mithril/hyperscript';
 import i18n from '../../i18n';
 import router from '../../router';
 import settings from '../../settings';
+import { specialFenVariants } from '../../lichess/variant';
 import ViewOnlyBoard from '../shared/ViewOnlyBoard';
 import formWidgets from '../shared/form';
 import popupWidget from '../shared/popup';
@@ -49,9 +49,9 @@ export default {
         function() {
           const availVariants = settings.otb.availableVariants;
           const variants = ctrl.root.vm.setupFen ?
-            availVariants.filter(i => !['racingKings', 'horde'].includes(i[1])) :
+            availVariants.filter(i => !specialFenVariants.includes(i[1])) :
             availVariants;
-          if (ctrl.root.vm.setupFen && ['racingKings', 'horde'].includes(settings.otb.variant())) {
+          if (ctrl.root.vm.setupFen && specialFenVariants.includes(settings.otb.variant())) {
             settings.otb.variant('standard');
           }
           return (
@@ -64,18 +64,22 @@ export default {
                   <div className="from_position_wrapper">
                     <p>{i18n('fromPosition')}</p>
                     <div className="from_position">
-                      <div className="setupMiniBoardWrapper"
+                      <div
+                        style={{
+                          width: '130px',
+                          height: '130px'
+                        }}
                         oncreate={helper.ontap(() => {
                           router.set(`/editor/${encodeURIComponent(ctrl.root.vm.setupFen)}`);
                         })}
                       >
-                        {m(ViewOnlyBoard, { fen: ctrl.root.vm.setupFen })}
+                        {h(ViewOnlyBoard, { fen: ctrl.root.vm.setupFen, bounds: { width: 130, height: 130 }})}
                       </div>
                     </div>
                   </div> : null
                 }
               </div>
-              {m('div', formWidgets.renderClockOptions('otbClock', settings.otb.time, settings.otb.increment))}
+              {h('div', formWidgets.renderClockOptions('otbClock', settings.otb.time, settings.otb.increment))}
               <button className="newGameButton" data-icon="E"
                 oncreate={helper.ontap(() =>
                   ctrl.root.startNewGame(settings.otb.variant() as VariantKey,
