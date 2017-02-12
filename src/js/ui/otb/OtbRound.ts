@@ -61,16 +61,13 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     const currentIncrement = <VariantKey>settings.otb.increment();
 
     const clockSettings: ClockData = {
-      initial: +currentTime,
-      increment: +currentIncrement,
-      black: +currentTime,
-      white: +currentTime,
+      initial: +currentTime * 60,
+      increment: +currentIncrement * 60,
+      black: +currentTime * 60,
+      white: +currentTime * 60,
       emerg: 60,
-      running: false
+      running: true
     }
-
-    console.info("current time is: " + currentTime);
-    console.info("current increment is: " + currentIncrement);
 
     if (!setupFen) {
       if (saved) {
@@ -106,9 +103,6 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
 
     if (!this.replay) {
 
-      this.data.game.turns = 0;
-      this.data.game.startedAtTurn = 0;
-
       this.replay = new Replay(
         variant,
         initialFen,
@@ -141,6 +135,9 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
       payload.fen = setupFen;
     }
 
+    this.data.game.turns = 0;
+    this.data.game.startedAtTurn = 0;
+
     this.clock = this.data.clock ? new (<any>clockCtrl)(
       this.data.clock,
       this.onClockTimeout,
@@ -148,7 +145,6 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     ) : false;
 
     if (this.clock) this.clockIntervId = setInterval(this.clockTick, 100);
-    console.info("On init, clock interv id is: " + this.clockIntervId);
 
     helper.analyticsTrackEvent('Offline OTB Game', `New game ${variant}`);
 
@@ -197,6 +193,9 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     if (!promotion.start(this.chessground, orig, dest, this.onPromotion)) {
       this.replay.addMove(orig, dest);
     }
+
+    this.data.game.turns++;
+    this.data.game.player = this.data.game.player == "white" ? "black" : "white";
   }
 
   private onMove = (orig: Pos, dest: Pos, capturedPiece: Piece) => {
@@ -209,6 +208,7 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     } else sound.move();
 
     this.data.game.turns++;
+    this.data.game.player = this.data.game.player == "white" ? "black" : "white";
   }
 
   private onUserNewPiece = (role: Role, key: Pos) => {
