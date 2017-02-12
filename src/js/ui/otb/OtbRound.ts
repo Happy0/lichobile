@@ -69,6 +69,9 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
       running: false
     }
 
+    console.info("current time is: " + currentTime);
+    console.info("current increment is: " + currentIncrement);
+
     if (!setupFen) {
       if (saved) {
         try {
@@ -88,7 +91,9 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
   }
 
   private clockTick = () => {
-    if (this.isClockRunning()) this.clock.tick(this.data.game.player);
+    if (this.isClockRunning()) {
+      this.clock.tick(this.data.game.player);
+    }
   }
 
   public init(data: OfflineGameData, situations: Array<GameSituation>, ply: number) {
@@ -100,6 +105,10 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     const initialFen = this.data.game.initialFen;
 
     if (!this.replay) {
+
+      this.data.game.turns = 0;
+      this.data.game.startedAtTurn = 0;
+
       this.replay = new Replay(
         variant,
         initialFen,
@@ -109,6 +118,9 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
         this.onThreefoldRepetition
       );
     } else {
+      this.data.game.turns = ply;
+      this.data.game.startedAtTurn = ply;
+
       this.replay.init(variant, initialFen, situations, ply);
     }
 
@@ -117,14 +129,6 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     } else {
       ground.reload(this.chessground, this.data, this.replay.situation());
     }
-
-    this.clock = this.data.clock ? new (<any>clockCtrl)(
-      this.data.clock,
-      this.onClockTimeout,
-      this.data.player.color
-    ) : false;
-
-    if (this.clock) this.clockIntervId = setInterval(this.clockTick, 100);
 
     redraw();
   }
@@ -136,6 +140,15 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
     if (setupFen && !specialFenVariants.includes(variant)) {
       payload.fen = setupFen;
     }
+
+    this.clock = this.data.clock ? new (<any>clockCtrl)(
+      this.data.clock,
+      this.onClockTimeout,
+      this.data.player.color
+    ) : false;
+
+    if (this.clock) this.clockIntervId = setInterval(this.clockTick, 100);
+    console.info("On init, clock interv id is: " + this.clockIntervId);
 
     helper.analyticsTrackEvent('Offline OTB Game', `New game ${variant}`);
 
@@ -171,6 +184,7 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
   }
 
   private onClockTimeout = ()  => {
+    console.info(this.clockIntervId);
     clearInterval(this.clockIntervId);
     console.info("Clock timed out...");
   }
@@ -193,6 +207,8 @@ export default class OtbRound implements OtbRoundInterface, PromotingInterface {
       }
       else sound.capture();
     } else sound.move();
+
+    this.data.game.turns++;
   }
 
   private onUserNewPiece = (role: Role, key: Pos) => {
